@@ -1,0 +1,20 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "dotnet: publish debug",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "publish",
+        "./PowerShellGrpcTool/",
+        "-c",
+        "Debug",
+        "--no-build"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      }
+    }
+  ]
+}

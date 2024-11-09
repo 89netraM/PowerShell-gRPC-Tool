@@ -1,0 +1,12 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "PowerShell gRPC Tool",
+      "type": "dotnet",
+      "preLaunchTask": "dotnet: publish debug",
+      "request": "launch",
+      "projectPath": "${workspaceFolder}/PowerShellGrpcTool/PowerShellGrpcTool.csproj"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+option csharp_namespace = "PowerShellGrpcTool.ExampleService";
+
+package greet;
+
+message Message {
+  string sender = 1;
+  string message = 2;
+}

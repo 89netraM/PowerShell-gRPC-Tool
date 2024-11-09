@@ -4,6 +4,8 @@ option csharp_namespace = "PowerShellGrpcTool.ExampleService";
 
 package greet;
 
+import "Protos/message.proto";
+
 // The greeting service definition.
 service Greeter {
   // Sends a greeting
@@ -17,5 +19,5 @@ message HelloRequest {
 
 // The response message containing the greetings.
 message HelloReply {
-  string message = 1;
+  Message message = 1;
 }
