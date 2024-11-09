@@ -5,6 +5,8 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerShellGrpcTool", "PowerShellGrpcTool\PowerShellGrpcTool.csproj", "{D2BB3151-1A88-41E6-B413-6116D01D83F8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerShellGrpcTool.ExampleService", "PowerShellGrpcTool.ExampleService\PowerShellGrpcTool.ExampleService.csproj", "{80BA87B1-4230-4D8C-ABF0-F3D81207DC68}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{D2BB3151-1A88-41E6-B413-6116D01D83F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D2BB3151-1A88-41E6-B413-6116D01D83F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D2BB3151-1A88-41E6-B413-6116D01D83F8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{80BA87B1-4230-4D8C-ABF0-F3D81207DC68}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{80BA87B1-4230-4D8C-ABF0-F3D81207DC68}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{80BA87B1-4230-4D8C-ABF0-F3D81207DC68}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{80BA87B1-4230-4D8C-ABF0-F3D81207DC68}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
