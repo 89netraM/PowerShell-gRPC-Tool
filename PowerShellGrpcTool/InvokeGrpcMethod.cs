@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Management.Automation;
-using Google.Protobuf.Reflection;
 
 namespace PowerShellGrpcTool;
 
@@ -15,17 +14,19 @@ public class InvokeGrpcMethod : PSCmdlet
     [Parameter(Mandatory = false)]
     public DirectoryInfo ProtoBufRoot { get; init; } = new(".");
 
+    [Parameter(Mandatory = true)]
+    [ArgumentCompleter(typeof(ServiceNameArgumentCompleter))]
+    public required string Service { get; init; }
+
+    [Parameter(Mandatory = true)]
+    [ArgumentCompleter(typeof(MethodNameArgumentCompleter))]
+    public required string Method { get; init; }
+
     protected override void ProcessRecord()
     {
-        var protoBufSet = new FileDescriptorSet();
-        protoBufSet.AddImportPath(ProtoBufRoot.FullName);
-        using (var protoBufFile = ProtoBuf.OpenText())
-        {
-            protoBufSet.Add(Path.GetRelativePath(ProtoBufRoot.FullName, ProtoBuf.FullName), true, protoBufFile);
-        }
-        protoBufSet.Process();
+        var protoBufParser = new ProtoBufParser(ProtoBufRoot.FullName, ProtoBuf.FullName);
 
-        if (protoBufSet.GetErrors() is { Length: > 0 } errors)
+        if (protoBufParser.Errors is { Count: > 0 } errors)
         {
             foreach (var error in errors)
             {
@@ -41,9 +42,9 @@ public class InvokeGrpcMethod : PSCmdlet
             return;
         }
 
-        var serviceMethods = protoBufSet
-            .Files.SelectMany(f => f.Services)
-            .SelectMany(s => s.Methods.Select(m => new ServiceMethodDescription(s.Name, m.Name)));
+        var serviceMethods = protoBufParser.Services.SelectMany(s =>
+            s.Methods.Select(m => new ServiceMethodDescription(s.Name, m.Name))
+        );
         WriteObject(serviceMethods, enumerateCollection: true);
     }
 

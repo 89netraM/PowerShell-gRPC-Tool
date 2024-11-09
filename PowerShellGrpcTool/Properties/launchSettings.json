@@ -3,7 +3,7 @@
     "Profile 1": {
       "commandName": "Executable",
       "executablePath": "pwsh",
-      "commandLineArgs": "-NoLogo -NoProfile -Command \"Import-Module .\\PowerShellGrpcTool\\bin\\Debug\\net8.0\\publish\\PowerShellGrpcTool.dll; Invoke-GrpcMethod -ProtoBufRoot .\\PowerShellGrpcTool.ExampleService\\ -ProtoBuf .\\PowerShellGrpcTool.ExampleService\\Protos\\greet.proto\"",
+      "commandLineArgs": "-NoLogo -NoProfile -NoExit -Command \"Import-Module .\\PowerShellGrpcTool\\bin\\Debug\\net8.0\\publish\\PowerShellGrpcTool.dll\"",
       "workingDirectory": ".."
     }
   }
