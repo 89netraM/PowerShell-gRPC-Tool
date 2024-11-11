@@ -9,27 +9,37 @@ namespace PowerShellGrpcTool;
 
 public class ProtoBufParser
 {
+    public FileDescriptorSet FileDescriptorSet { get; } = new FileDescriptorSet();
+
     private readonly Lazy<Error[]> errors;
     public IReadOnlyList<Error> Errors => errors.Value;
 
     private readonly Lazy<ServiceDescriptorProto[]> services;
     public IReadOnlyList<ServiceDescriptorProto> Services => services.Value;
 
+    private readonly Lazy<Dictionary<string, DescriptorProto>> types;
+    public IReadOnlyDictionary<string, DescriptorProto> Types => types.Value;
+
     public ProtoBufParser(string protoBufRoot, string protoBufPath)
     {
-        var fileDescriptorSet = new FileDescriptorSet();
-        fileDescriptorSet.AddImportPath(protoBufRoot);
+        FileDescriptorSet.AddImportPath(protoBufRoot);
         using (var protoBufStream = File.OpenText(protoBufPath))
         {
-            fileDescriptorSet.Add(
+            FileDescriptorSet.Add(
                 Path.GetRelativePath(protoBufRoot, protoBufPath),
                 includeInOutput: true,
                 protoBufStream
             );
         }
-        fileDescriptorSet.Process();
+        FileDescriptorSet.Process();
 
-        errors = new(fileDescriptorSet.GetErrors);
-        services = new(() => fileDescriptorSet.Files.SelectMany(f => f.Services).ToArray());
+        errors = new(FileDescriptorSet.GetErrors);
+        services = new(() => FileDescriptorSet.Files.SelectMany(f => f.Services).ToArray());
+        types = new(
+            () =>
+                FileDescriptorSet
+                    .Files.SelectMany(f => f.MessageTypes)
+                    .ToDictionary(t => t.GetFullyQualifiedName(), t => t)
+        );
     }
 }
