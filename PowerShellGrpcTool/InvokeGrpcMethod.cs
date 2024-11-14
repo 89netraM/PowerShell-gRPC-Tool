@@ -56,10 +56,10 @@ public class InvokeGrpcMethod : PSCmdlet
             return;
         }
 
-        var service = protoBufParser.Services.SingleOrDefault(s =>
-            s.Name.Equals(Service, StringComparison.OrdinalIgnoreCase)
+        var packageService = protoBufParser.Services.SingleOrDefault(s =>
+            s.service.Name.Equals(Service, StringComparison.OrdinalIgnoreCase)
         );
-        if (service is null)
+        if (packageService is not (string package, ServiceDescriptorProto service))
         {
             WriteError(
                 new(new($"No service named \"{Service}\" found"), string.Empty, ErrorCategory.InvalidArgument, this)
@@ -79,7 +79,7 @@ public class InvokeGrpcMethod : PSCmdlet
         using var channel = GrpcChannel.ForAddress(Endpoint);
         var client = new GrpcClient(
             channel,
-            "greet.Greeter",
+            $"{package}.{service.Name}",
             BinderConfiguration.Create(
                 [
                     new IDictionaryMarshallerFactory(
@@ -106,10 +106,8 @@ class IDictionaryMarshallerFactory(DescriptorProto inputDescriptorProto, Descrip
         }
 
         using var ms = new MemoryStream();
-        var state = ProtoWriter.State.Create(ms, new IDictionaryTypeModel(inputDescriptorProto));
-        state.GetSerializer<IDictionary>().Write(ref state, dictionary);
-        state.Flush();
-        state.Dispose();
+        using var state = ProtoWriter.State.Create(ms, new IDictionaryTypeModel(inputDescriptorProto));
+        state.SerializeRoot(dictionary);
         return ms.ToArray();
     }
 
@@ -117,12 +115,11 @@ class IDictionaryMarshallerFactory(DescriptorProto inputDescriptorProto, Descrip
     {
         if (typeof(T) != typeof(IDictionary))
         {
-            throw new ArgumentException(message: $"Can only deserialize {nameof(IDictionary)}");
+            throw new ArgumentException(message: $"Can only deserialize {nameof(IDictionary)}", paramName: nameof(T));
         }
 
-        var state = ProtoReader.State.Create(payload, new IDictionaryTypeModel(outputDescriptorProto));
-        var result = state.GetSerializer<IDictionary>().Read(ref state, new Hashtable());
-        state.Dispose();
+        using var state = ProtoReader.State.Create(payload, new IDictionaryTypeModel(outputDescriptorProto));
+        var result = state.DeserializeRoot<IDictionary>();
         return (T)result;
     }
 
@@ -137,7 +134,7 @@ class IDictionaryTypeModel(DescriptorProto descriptorProto) : TypeModel
             : base.GetSerializer<T>();
 }
 
-class IDictionarySerializer(DescriptorProto descriptorProto) : ISerializer<IDictionary>
+class IDictionarySerializer(DescriptorProto descriptorProto) : IRepeatedSerializer<IDictionary>
 {
     public SerializerFeatures Features => SerializerFeatures.WireTypeVarint;
 
@@ -225,7 +222,7 @@ class IDictionarySerializer(DescriptorProto descriptorProto) : ISerializer<IDict
                 }
                 case FieldDescriptorProto.Type.TypeMessage:
                 {
-                    if (value is IDictionarySerializer innerDictionary)
+                    if (value is IDictionary innerDictionary)
                         state.WriteMessage(Features, innerDictionary);
                     else
                         throw new Exception($"ProtoBuf said object, but value was {value?.GetType().Name ?? "null"}");
@@ -239,18 +236,53 @@ class IDictionarySerializer(DescriptorProto descriptorProto) : ISerializer<IDict
 
     public IDictionary Read(ref ProtoReader.State state, IDictionary dictionary)
     {
-        while (state.ReadFieldHeader() is int filedNumber and > 0)
+        for (int fieldNumber = state.FieldNumber; fieldNumber > 0; fieldNumber = state.ReadFieldHeader())
         {
-            if (descriptorProto.Fields.FirstOrDefault(f => f.Number == filedNumber) is not FieldDescriptorProto field)
+            if (descriptorProto.Fields.FirstOrDefault(f => f.Number == fieldNumber) is not FieldDescriptorProto field)
             {
                 continue;
             }
 
             switch (field.type)
             {
+                case FieldDescriptorProto.Type.TypeDouble:
+                {
+                    dictionary[field.Name] = state.ReadDouble();
+                    break;
+                }
+                case FieldDescriptorProto.Type.TypeFloat:
+                {
+                    dictionary[field.Name] = state.ReadSingle();
+                    break;
+                }
+                case FieldDescriptorProto.Type.TypeInt64:
+                {
+                    dictionary[field.Name] = state.ReadInt64();
+                    break;
+                }
+                case FieldDescriptorProto.Type.TypeUint64:
+                {
+                    dictionary[field.Name] = state.ReadUInt64();
+                    break;
+                }
+                case FieldDescriptorProto.Type.TypeInt32:
+                {
+                    dictionary[field.Name] = state.ReadInt32();
+                    break;
+                }
+                case FieldDescriptorProto.Type.TypeUint32:
+                {
+                    dictionary[field.Name] = state.ReadUInt32();
+                    break;
+                }
+                case FieldDescriptorProto.Type.TypeBool:
+                {
+                    dictionary[field.Name] = state.ReadBoolean();
+                    break;
+                }
                 case FieldDescriptorProto.Type.TypeString:
                 {
-                    dictionary[field.Name] = (string?)state.ReadString();
+                    dictionary[field.Name] = state.ReadString();
                     break;
                 }
                 case FieldDescriptorProto.Type.TypeMessage:
@@ -268,4 +300,14 @@ class IDictionarySerializer(DescriptorProto descriptorProto) : ISerializer<IDict
 
         return dictionary;
     }
+
+    public void WriteRepeated(
+        ref ProtoWriter.State state,
+        int fieldNumber,
+        SerializerFeatures features,
+        IDictionary dictionary
+    ) => Write(ref state, dictionary);
+
+    public IDictionary ReadRepeated(ref ProtoReader.State state, SerializerFeatures features, IDictionary dictionary) =>
+        Read(ref state, dictionary);
 }

@@ -14,8 +14,8 @@ public class ProtoBufParser
     private readonly Lazy<Error[]> errors;
     public IReadOnlyList<Error> Errors => errors.Value;
 
-    private readonly Lazy<ServiceDescriptorProto[]> services;
-    public IReadOnlyList<ServiceDescriptorProto> Services => services.Value;
+    private readonly Lazy<(string, ServiceDescriptorProto)[]> services;
+    public IReadOnlyList<(string package, ServiceDescriptorProto service)> Services => services.Value;
 
     private readonly Lazy<Dictionary<string, DescriptorProto>> types;
     public IReadOnlyDictionary<string, DescriptorProto> Types => types.Value;
@@ -34,7 +34,7 @@ public class ProtoBufParser
         FileDescriptorSet.Process();
 
         errors = new(FileDescriptorSet.GetErrors);
-        services = new(() => FileDescriptorSet.Files.SelectMany(f => f.Services).ToArray());
+        services = new(() => FileDescriptorSet.Files.SelectMany(f => f.Services.Select(s => (f.Package, s))).ToArray());
         types = new(
             () =>
                 FileDescriptorSet

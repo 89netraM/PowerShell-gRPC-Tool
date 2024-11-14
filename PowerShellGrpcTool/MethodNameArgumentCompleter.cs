@@ -30,7 +30,7 @@ public class MethodNameArgumentCompleter : IArgumentCompleter
             return [];
         }
 
-        IEnumerable<ServiceDescriptorProto> services = protoBufParser.Services;
+        var services = protoBufParser.Services.Select(s => s.service);
         if (TryGetServiceArgument(fakeBoundParameters) is string service)
         {
             services = services.Where(s => s.Name.Equals(service, StringComparison.OrdinalIgnoreCase));
