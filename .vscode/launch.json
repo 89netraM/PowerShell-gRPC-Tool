@@ -4,7 +4,6 @@
     {
       "name": "PowerShell gRPC Tool",
       "type": "dotnet",
-      "preLaunchTask": "dotnet: publish debug",
       "request": "launch",
       "projectPath": "${workspaceFolder}/PowerShellGrpcTool/PowerShellGrpcTool.csproj"
     }
