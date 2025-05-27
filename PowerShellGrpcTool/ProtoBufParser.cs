@@ -35,11 +35,8 @@ public class ProtoBufParser
 
         errors = new(FileDescriptorSet.GetErrors);
         services = new(() => FileDescriptorSet.Files.SelectMany(f => f.Services.Select(s => (f.Package, s))).ToArray());
-        types = new(
-            () =>
-                FileDescriptorSet
-                    .Files.SelectMany(f => f.MessageTypes)
-                    .ToDictionary(t => t.GetFullyQualifiedName(), t => t)
+        types = new(() =>
+            FileDescriptorSet.Files.SelectMany(f => f.MessageTypes).ToDictionary(t => t.GetFullyQualifiedName(), t => t)
         );
     }
 }
