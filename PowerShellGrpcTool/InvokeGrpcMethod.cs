@@ -234,8 +234,10 @@ class IDictionarySerializer(DescriptorProto descriptorProto) : IRepeatedSerializ
         }
     }
 
-    public IDictionary Read(ref ProtoReader.State state, IDictionary dictionary)
+    public IDictionary Read(ref ProtoReader.State state, IDictionary? dictionary)
     {
+        dictionary ??= new Hashtable();
+
         for (int fieldNumber = state.FieldNumber; fieldNumber > 0; fieldNumber = state.ReadFieldHeader())
         {
             if (descriptorProto.Fields.FirstOrDefault(f => f.Number == fieldNumber) is not FieldDescriptorProto field)
