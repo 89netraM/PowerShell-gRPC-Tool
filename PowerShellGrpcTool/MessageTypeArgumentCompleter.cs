@@ -4,11 +4,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Language;
-using Google.Protobuf.Reflection;
 
 namespace PowerShellGrpcTool;
 
-public class MethodNameArgumentCompleter : IArgumentCompleter
+public class MessageTypeArgumentCompleter : IArgumentCompleter
 {
     public IEnumerable<CompletionResult> CompleteArgument(
         string commandName,
@@ -30,26 +29,16 @@ public class MethodNameArgumentCompleter : IArgumentCompleter
             return [];
         }
 
-        var services = protoBufParser.Services.Select(s => s.service);
-        if (TryGetServiceArgument(fakeBoundParameters) is string service)
-        {
-            services = services.Where(s => s.Name.Equals(service, StringComparison.OrdinalIgnoreCase));
-        }
-
-        return services
-            .SelectMany(s => s.Methods)
-            .Where(m => m.Name.StartsWith(wordToComplete, StringComparison.OrdinalIgnoreCase))
-            .Select(m => new CompletionResult(m.Name));
+        return protoBufParser
+            .Types.Where(s => s.Key.StartsWith(wordToComplete, StringComparison.OrdinalIgnoreCase))
+            .Select(s => new CompletionResult(s.Key));
     }
 
     private static string? TryGetProtoBufRootArgument(IDictionary fakeBoundParameters) =>
-        TryGetStringArgument(fakeBoundParameters, nameof(InvokeGrpcMethod.ProtoBufRoot));
+        TryGetStringArgument(fakeBoundParameters, nameof(ConvertProtobufBase.ProtobufRoot));
 
     private static string? TryGetProtoBufArgument(IDictionary fakeBoundParameters) =>
-        TryGetStringArgument(fakeBoundParameters, nameof(InvokeGrpcMethod.ProtoBuf));
-
-    private static string? TryGetServiceArgument(IDictionary fakeBoundParameters) =>
-        TryGetStringArgument(fakeBoundParameters, nameof(InvokeGrpcMethod.Service));
+        TryGetStringArgument(fakeBoundParameters, nameof(ConvertProtobufBase.Protobuf));
 
     private static string? TryGetStringArgument(IDictionary fakeBoundParameters, string parameterName) =>
         fakeBoundParameters.Contains(parameterName) ? fakeBoundParameters[parameterName] as string : null;

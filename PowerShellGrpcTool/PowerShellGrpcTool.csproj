@@ -3,8 +3,7 @@
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Grpc.Net.Client" Version="2.71.0" />
-    <PackageReference Include="Protobuf-net.Grpc.Reflection" Version="1.2.2" />
+    <PackageReference Include="protobuf-net" Version="3.2.52" />
     <PackageReference Include="protobuf-net.Reflection" Version="3.2.52" />
     <PackageReference Include="System.Management.Automation" Version="7.5.1" />
   </ItemGroup>
